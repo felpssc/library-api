@@ -1,7 +1,8 @@
-import { getCustomRepository, Repository } from 'typeorm';
+import { getCustomRepository } from 'typeorm';
 import { Author } from '../entities/Author';
 import { AuthorRepository } from '../repositories/AuthorRepository';
 import { CreateAuthorSchema, UpdateAuthorSchema } from '../validators/author.validator';
+import { setRedis, getRedis } from '../utils/redis.utils';
 
 interface ICreateAuthor {
   name: string;
@@ -19,39 +20,50 @@ interface IListPagination {
 }
 
 class AuthorService {
-  private authorRepository: Repository<Author>;
+  private authorRepository: AuthorRepository;
 
   constructor() {
     this.authorRepository = getCustomRepository(AuthorRepository);
   }
 
-  async createAuthor({ name, email }: ICreateAuthor):Promise<Author[]> {
+  async createAuthor({ name, email }: ICreateAuthor):Promise<Author> {
     const { value, error } = CreateAuthorSchema.validate({ name, email });
 
     if (error) {
       throw new Error(error.details[0].message);
     }
 
-    const authorAlreadyExists = await this.findByEmail(email);
+    const authorAlreadyExists = await this.authorRepository.findAuthorByEmail(email);
 
     if (authorAlreadyExists) {
       throw new Error('Author already exists');
     }
 
-    const author = this.authorRepository.create(value);
+    const author = await this.authorRepository.createAuthor({
+      name: value.name,
+      email: value.email,
+    });
 
-    await this.authorRepository.save(author);
+    const { id } = author;
+
+    await setRedis(`author-${id}`, JSON.stringify(author));
 
     return author;
   }
 
   async findByEmail(email: string):Promise<Author | undefined> {
-    const author = await this.authorRepository.findOne({ email });
+    const author = await this.authorRepository.findAuthorByEmail(email);
 
     return author;
   }
 
   async findAuthorById(id: string):Promise<Author | undefined> {
+    const authorRedis:any = await getRedis(`author-${id}`);
+
+    if (authorRedis) {
+      return JSON.parse(authorRedis);
+    }
+
     const author = this.authorRepository.findOne(id);
 
     return author;
