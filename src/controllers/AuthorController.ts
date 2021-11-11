@@ -9,7 +9,7 @@ class AuthorController {
     try {
       const author = await service.createAuthor({ name, email });
 
-      return res.json(author);
+      return res.status(201).json(author);
     } catch (err: any) {
       return res.status(400).json({ error: err.message });
     }
