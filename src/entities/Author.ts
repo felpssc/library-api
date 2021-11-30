@@ -4,9 +4,11 @@ import {
   Entity,
   PrimaryColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 
 import { v4 as uuid } from 'uuid';
+import { Book } from './Book';
 
 @Entity('authors')
 class Author {
@@ -24,6 +26,9 @@ class Author {
 
   @UpdateDateColumn()
   updated_at?: Date;
+
+  @OneToMany(() => Book, (book) => book.author)
+  books?: Book[];
 
   constructor() {
     if (!this.id) {
