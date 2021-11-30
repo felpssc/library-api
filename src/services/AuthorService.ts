@@ -2,7 +2,7 @@ import { getCustomRepository } from 'typeorm';
 import { Author } from '../entities/Author';
 import { AuthorRepository } from '../repositories/AuthorRepository';
 import { CreateAuthorSchema, UpdateAuthorSchema } from '../validators/author.validator';
-import { setRedis, getRedis } from '../utils/redis.utils';
+import { redis } from '../../redis-config';
 
 interface ICreateAuthor {
   name: string;
@@ -46,7 +46,7 @@ class AuthorService {
 
     const { id } = author;
 
-    await setRedis(`author-${id}`, JSON.stringify(author));
+    await redis.set(`author-${id}`, JSON.stringify(author), 'EX', 300);
 
     return author;
   }
@@ -58,13 +58,15 @@ class AuthorService {
   }
 
   async findAuthorById(id: string):Promise<Author | undefined> {
-    const authorRedis:any = await getRedis(`author-${id}`);
+    const authorRedis:string | null = await redis.get(`author-${id}`);
 
     if (authorRedis) {
       return JSON.parse(authorRedis);
     }
 
-    const author = this.authorRepository.findOne(id);
+    const author = this.authorRepository.findOne(id, {
+      relations: ['books'],
+    });
 
     return author;
   }
