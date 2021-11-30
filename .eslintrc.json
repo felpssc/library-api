@@ -1,7 +1,8 @@
 {
     "env": {
         "node": true,
-        "es2021": true
+        "es2021": true,
+        "jest": true
     },
     "extends": [
         "airbnb-base"
@@ -12,9 +13,13 @@
         "sourceType": "module"
     },
     "plugins": [
+        "jest",
         "@typescript-eslint"
     ],
     "rules": {
+        "camelcase": "off",
+        "class-methods-use-this": "off",
+        "import/prefer-default-export": "off",
         "no-console": "off",
         "import/extensions": [
             "error",
@@ -31,5 +36,8 @@
         "import/resolver": {
           "typescript": {}
         }
+    },
+    "globals": {
+        "jest": true
     }
 }

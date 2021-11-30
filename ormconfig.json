@@ -4,5 +4,12 @@
   "host": "localhost",
   "username": "docker",
   "password": "root",
-  "database": "library" 
+  "database": "library",
+  "entities": ["./src/entities/**.ts"], 
+  "migrations": [
+    "./src/database/migrations/*.ts"
+  ],
+  "cli": {
+    "migrationsDir": "./src/database/migrations"
+  }
 }

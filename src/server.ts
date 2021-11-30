@@ -1,8 +1,4 @@
-import express from 'express';
-
-import './database';
-
-const app = express();
+import { app } from './app';
 
 app.listen(3000, () => {
   // eslint-disable-next-line no-console
