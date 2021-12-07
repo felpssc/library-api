@@ -52,7 +52,15 @@ class AuthorService {
   }
 
   async findByEmail(email: string):Promise<Author | undefined> {
+    const cachedAuthor = await redis.get(`author-${email}`);
+
+    if (cachedAuthor) {
+      return JSON.parse(cachedAuthor);
+    }
+
     const author = await this.authorRepository.findAuthorByEmail(email);
+
+    await redis.set(`author-${email}`, JSON.stringify(author), 'EX', 600);
 
     return author;
   }
@@ -72,10 +80,18 @@ class AuthorService {
   }
 
   async listAuthors({ limit = 10, offset = 0 }: IListPagination):Promise<[Author[], number]> {
+    const cachedAuthors = await redis.get(`list-authors-limit-${limit}-offset-${offset}`);
+
+    if (cachedAuthors) {
+      return JSON.parse(cachedAuthors);
+    }
+
     const authors = await this.authorRepository.findAndCount({
       skip: offset,
       take: limit,
     });
+
+    await redis.set(`list-authors-limit-${limit}-offset-${offset}`, JSON.stringify(authors), 'EX', 200);
 
     return authors;
   }
