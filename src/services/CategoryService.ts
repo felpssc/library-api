@@ -2,6 +2,7 @@ import { getCustomRepository } from 'typeorm';
 import { Category } from '../entities/Category';
 import { CategoryRepository } from '../repositories/CategoryRepository';
 import { CreateCategorySchema } from '../validators/category.validator';
+import { redis } from '../../redis-config';
 
 interface ICreateCategory {
   title: string;
@@ -35,7 +36,15 @@ class CategoryService {
   }
 
   async listCategories(): Promise<[Category[], number]> {
+    const cachedCategories = await redis.get('categories');
+
+    if (cachedCategories) {
+      return JSON.parse(cachedCategories);
+    }
+
     const categories = await this.categoryRepository.findAndCount();
+
+    await redis.set('categories', JSON.stringify(categories), 'EX', 200);
 
     return categories;
   }

@@ -4,6 +4,7 @@ import { CreateBookSchema } from '../validators/book.validator';
 import { AuthorService } from './AuthorService';
 import { CategoryRepository } from '../repositories/CategoryRepository';
 import { Book } from '../entities/Book';
+import { redis } from '../../redis-config';
 
 interface ICreateBook {
   title: string;
@@ -54,19 +55,37 @@ class BookService {
 
     await this.bookRepository.save(book);
 
+    await redis.set(`book-${book.id}`, JSON.stringify(book), 'EX', 200);
+
     return book;
   }
 
   async findBookById(id: string): Promise<Book | undefined> {
+    const cachedBook = await redis.get(`book-${id}`);
+
+    if (cachedBook) {
+      return JSON.parse(cachedBook);
+    }
+
     const book = await this.bookRepository.findOne({ id }, {
       relations: ['author', 'category'],
     });
+
+    await redis.set(`book-${id}`, JSON.stringify(book), 'EX', 200);
 
     return book;
   }
 
   async findBooksByAuthorId(author_id: string): Promise<Book[]> {
+    const cachedBooks = await redis.get(`books-author-${author_id}`);
+
+    if (cachedBooks) {
+      return JSON.parse(cachedBooks);
+    }
+
     const books = await this.bookRepository.find({ where: { author_id }, relations: ['author', 'category'] });
+
+    await redis.set(`books-author-${author_id}`, JSON.stringify(books), 'EX', 200);
 
     return books;
   }
