@@ -6,7 +6,7 @@
 
 A ideia desse projeto foi criar uma simples API de uma livraria, que fosse possível criar, buscar, atualizar e deletar categorias, autores e os livros desses autores, com o intuito de praticar novos conhecimentos sobre testes automatizados (unitários e de integração) com [Jest](https://jestjs.io/pt-BR/) e a utilização de cache na aplicação com [Redis](https://redis.io/).
 
-A aplicação foi construída em Typescript e Node.js com Express.js como framework, na parte de armazenamento dos dados foi utilizado Postgres com TypeORM para manipulação e Redis para armazenamento de cache, para a infraestrutura do projeto utilizei Docker para "contêinerizar" toda aplicação e evitar problemas. O projeto também contou com dezenas de testes unitários e de integração, garantindo bom funcionamento do código.  
+A aplicação foi construída em Typescript e Node.js com Express.js como framework, na parte de armazenamento dos dados foi utilizado Postgres com TypeORM para manipulação e Redis para armazenamento de cache, para a infraestrutura do projeto utilizei Docker para "contêinerizar" toda aplicação e evitar problemas com diferentes ambientes. O projeto também contou com dezenas de testes unitários e de integração, garantindo bom funcionamento do código.  
 
 ## Rotas
 
